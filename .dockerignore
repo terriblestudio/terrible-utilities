@@ -1,0 +1,4 @@
+.git
+dist
+test-results
+tests/certs

@@ -1,0 +1,68 @@
+name: terrible-utilities-test
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_ROOT_PASSWORD: isolated-root-password
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: isolated-wordpress-password
+    volumes: [db:/var/lib/mysql]
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 3s
+      retries: 30
+  wordpress:
+    image: terrible-utilities-wordpress:test
+    build:
+      context: .
+      dockerfile: tests/Dockerfile
+    ports: ['127.0.0.1:18766:80']
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: isolated-wordpress-password
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DEBUG: '1'
+      WORDPRESS_CONFIG_EXTRA: |
+        define('TERRIBLE_BACKUPS_DIR', '/var/lib/terrible-backups');
+        define('TERRIBLE_BACKUPS_ALLOW_HTTP', true);
+        define('TERRIBLE_BACKUPS_TEST_ENDPOINTS', array_fill_keys(['dropbox_api','dropbox_content','dropbox_auth','google','google_token','google_auth'], 'http://mock:8080'));
+        define('TERRIBLE_MAIL_TEST_ENDPOINTS', ['resend'=>'http://mock:8080/emails','ses'=>'http://mock:8080/v2/email/outbound-emails','gmail'=>'http://mock:8080/gmail/v1/users/me/messages/send','google_token'=>'http://mock:8080/token']);
+
+        define('WP_DEBUG_LOG', true);
+        define('WP_DEBUG_DISPLAY', false);
+    volumes:
+      - wordpress:/var/www/html
+      - backups:/var/lib/terrible-backups
+      - .:/suite:ro
+    depends_on:
+      db: {condition: service_healthy}
+  mock:
+    image: python:3.13-alpine
+    command: python /tests/mock-services.py
+    networks:
+      default:
+        aliases: [mock-alt]
+    volumes: ['./tests:/tests:ro']
+  s3:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: terrible-test-access
+      MINIO_ROOT_PASSWORD: terrible-test-secret
+    volumes: [s3:/data]
+  ftp:
+    build:
+      context: .
+      dockerfile: tests/ftp.Dockerfile
+volumes:
+  db:
+  wordpress:
+  backups:
+  s3:
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 10.253.222.0/24
