@@ -33,4 +33,4 @@ Local run output is retained in `test-results/verification.log` and `test-result
 
 ## Retirements
 
-History and Forms are absent from the active-package list and inactive in the demo. Their source and stored records are retained. Current tests exercise the retained lineup and optional replacements; older Forms/History results are historical, not ongoing maintenance commitments. See RETIREMENTS.md for migration and caching boundaries.
+History and Forms are absent from the active-package list and inactive in the demo. Stored records are retained, but their source is no longer part of this repository. Current tests exercise the active lineup and optional replacements; older Forms/History results are historical, not ongoing maintenance commitments. See RETIREMENTS.md for migration and caching boundaries.

@@ -19,7 +19,7 @@ Each `terrible-*` directory is an independent installable plugin. Mail's optiona
 
 With two or more core products active, screens share one **Terrible** menu. Integration packs do not count. A single product stays under Tools (Mail under Settings). Old URLs redirect to the current location. Each ZIP bundles the same small navigation/style helper; no framework plugin or dashboard is required.
 
-History is retired under `retired/terrible-history`; Forms is paused under `paused/terrible-forms`. Neither is packaged. See [RETIREMENTS.md](RETIREMENTS.md) for preserved data, Stream support, and the contact-form assessment.
+History and Forms are retired from this repository and are not packaged. See [RETIREMENTS.md](RETIREMENTS.md) for preserved data, Stream support, and the contact-form assessment.
 
 ## Install
 
