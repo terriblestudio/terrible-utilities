@@ -1,0 +1,31 @@
+name: terrible-social-package-min
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_ROOT_PASSWORD: isolated-root-password
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: isolated-wordpress-password
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 3s
+      retries: 30
+  wordpress:
+    image: wordpress:6.6-php8.2-apache
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: isolated-wordpress-password
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - ./dist:/packages:ro
+      - ./tests:/suite-tests:ro
+      - ./tests/wp-cli.phar:/usr/local/bin/wp:ro
+    depends_on:
+      db: {condition: service_healthy}
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 10.253.225.0/24

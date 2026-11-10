@@ -18,4 +18,8 @@ docker compose exec -T -u www-data wordpress wp plugin activate stream very-simp
 docker compose exec -T -u www-data wordpress wp eval-file /suite/tests/polish.php
 docker compose exec -T -u www-data wordpress wp eval-file /suite/tests/replacements-setup.php
 python3 tests/replacements.py
+docker compose exec -T -u www-data wordpress wp plugin activate terrible-social-images
+docker compose exec -T -u www-data wordpress wp eval-file /suite/tests/social-images.php
+draft=$(docker compose exec -T -u www-data wordpress wp post create --post_type=post --post_status=draft --post_title='Preview test draft' --porcelain)
+python3 tests/social-preview-http.py http://localhost:18766 "$draft" backup-admin local-backup-test-password http-subscriber http-test-password
 printf 'ALL SUITES PASSED\n' 

@@ -1,0 +1,37 @@
+name: terrible-social-offload-test
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_ROOT_PASSWORD: isolated-root-password
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: isolated-wordpress-password
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 3s
+      retries: 30
+  wordpress:
+    image: terrible-utilities-wordpress:test
+    ports: ['127.0.0.1:18769:80']
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: isolated-wordpress-password
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - ./terrible-social-images:/var/www/html/wp-content/plugins/terrible-social-images:ro
+      - ./terrible-metadata:/var/www/html/wp-content/plugins/terrible-metadata:ro
+      - ${TSI_OFFLOAD_PLUGIN:?Set TSI_OFFLOAD_PLUGIN to the extracted WP Offload Media Lite directory}:/var/www/html/wp-content/plugins/amazon-s3-and-cloudfront:ro
+      - ./tests/social-offload-config.php:/var/www/html/wp-content/mu-plugins/social-offload-config.php:ro
+      - ./tests:/suite-tests:ro
+    depends_on:
+      db: {condition: service_healthy}
+  minio:
+    image: bitnamilegacy/minio:2025.7.23
+    user: '0:0'
+    entrypoint: ['/opt/bitnami/minio/bin/minio']
+    command: ['server', '/data']
+    environment:
+      MINIO_ROOT_USER: isolated-test-access
+      MINIO_ROOT_PASSWORD: isolated-test-secret

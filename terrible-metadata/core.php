@@ -15,7 +15,7 @@ final class Plugin {
         $post=get_post($id); if (!$post) return [];
         $description=get_post_meta($id,'_terrible_meta_description',true);
         if (!$description) { $text=$post->post_excerpt?:strip_shortcodes($post->post_content); $description=mb_substr(trim(preg_replace('/\s+/u',' ',wp_strip_all_tags($text))),0,180); }
-        $image=(int)get_post_meta($id,'_terrible_meta_image',true)?:get_post_thumbnail_id($id)?: (int)get_option('terrible_metadata_image',0);
+        $image=(int)get_post_meta($id,'_terrible_meta_image',true) ?: (int)apply_filters('terrible_metadata_generated_image',0,$id) ?: get_post_thumbnail_id($id) ?: (int)get_option('terrible_metadata_image',0);
         return ['title'=>get_post_meta($id,'_terrible_meta_title',true)?:get_the_title($id),'description'=>$description,'image'=>$image,'url'=>get_permalink($id)];
     }
     public static function head(): void {
